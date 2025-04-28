@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive AI Ascend - Assessment Portal</title>
+    <!-- Load Chart.js from CDNJS (more reliable CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Load latest jsPDF with compatibility mode -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root {
+            --primary: #1a365d;
+            --secondary: #2a6baf;
+            --accent: #e2b04a;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #28a745;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: var(--light);
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .logo span {
+            color: var(--accent);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 1.5rem;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav ul li a:hover {
+            color: var(--accent);
+        }
+        
+        .main-content {
+            padding: 2rem 0;
+        }
+        
+        .assessment-intro {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 3rem;
+        }
+        
+        .assessment-intro h1 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 2.2rem;
+        }
+        
+        .assessment-intro p {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            background-color: var(--secondary);
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary);
+        }
+        
+        .assessment-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .assessment-nav {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+            overflow-x: auto;
+        }
+        
+        .assessment-nav button {
+            background: none;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            position: relative;
+            white-space: nowrap;
+        }
+        
+        .assessment-nav button.active {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        .assessment-nav button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--secondary);
+        }
+        
+        .assessment-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .assessment-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .question-group {
+            margin-bottom: 2.5rem;
+        }
+        
+        .question-group h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .question {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .question p {
+            margin-bottom: 1rem;
+        }
+        
+        .options {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .option {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.7rem 0.5rem;
+            margin: 0 0.5rem 0.5rem 0;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .option:hover {
+            border-color: var(--secondary);
+        }
+        
+        .option.selected {
+            background-color: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            margin-top: 2rem;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--accent);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .results-container {
+            display: none;
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .results-summary {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .results-card {
+            flex: 1;
+            min-width: 250px;
+            margin: 0.5rem;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .results-card h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .score {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        
+        .score-label {
+            color: #666;
+        }
+        
+        .radar-chart {
+            width: 100%;
+            height: 400px;
+            margin: 2rem 0;
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        canvas {
+            max-width: 100%;
+        }
+        
+        .chart-fallback {
+            display: none;
+            padding: 2rem;
+            text-align: center;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin: 2rem 0;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #777;
+        }
+        
+        .download-progress {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .download-progress-bar {
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .download-progress-fill {
+            height: 100%;
+            background-color: var(--success);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        /* Embedded PDF viewer */
+        .pdf-viewer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 2000;
+            overflow: auto;
+        }
+        
+        .pdf-container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .close-pdf {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            z-index: 2001;
+        }
+        
+        .pdf-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .pdf-preview {
+            width: 100%;
+            height: 700px;
+            border: 1px solid #ddd;
+        }
+        
+        /* Success notification */
+        .download-notification {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--success);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                padding: 1rem 0;
+            }
+            
+            nav ul {
+                margin-top: 1rem;
+            }
+            
+            .assessment-nav {
+                padding-bottom: 0.5rem;
+            }
+            
+            .assessment-nav button {
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .options {
+                flex-direction: column;
+            }
+            
+            .option {
+                margin-bottom: 0.8rem;
+                width: 100%;
+            }
+            
+            .pdf-container {
+                width: 95%;
+                padding: 10px;
+            }
+            
+            .pdf-preview {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">Executive <span>AI</span> Ascend</a>
+                <nav>
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">Assessments</a></li>
+                        <li><a href="#">Resources</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="assessment-intro" id="intro-section">
+                <h1>AI Leadership & Organizational Readiness Assessment</h1>
+                <p>This comprehensive assessment evaluates both leadership AI competencies and organizational readiness across people, technology, and process dimensions. Upon completion, you'll receive a detailed report with actionable insights and recommendations.</p>
+                <button id="start-assessment" class="btn">Begin Assessment</button>
+            </div>
+            
+            <div id="assessment-form" style="display: none;">
+                <div class="assessment-container">
+                    <div class="assessment-nav">
+                        <button class="nav-button active" data-section="section-intro">Introduction</button>
+                        <button class="nav-button" data-section="section-leadership">Leadership AI Competency</button>
+                        <button class="nav-button" data-section="section-people">People Dimension</button>
+                        <button class="nav-button" data-section="section-technology">Technology Dimension</button>
+                        <button class="nav-button" data-section="section-process">Process Dimension</button>
+                        <button class="nav-button" data-section="section-results">Results</button>
+                    </div>
+                    
+                    <div class="assessment-content">
+                        <!-- Introduction Section -->
+                        <div id="section-intro" class="assessment-section active">
+                            <h2>Assessment Overview</h2>
+                            <p>Welcome to the Executive AI Ascend Leadership and Organizational Readiness Assessment. This tool is designed to help you evaluate your current AI capabilities and create a roadmap for transformation.</p>
+                            
+                            <div class="question-group">
+                                <h3>Organization Information</h3>
+                                <div class="question">
+                                    <p>Organization Name:</p>
+                                    <input type="text" class="form-control" id="org-name" style="width: 100%; padding: 8px; margin-bottom: 10px;" value="Executive AI Ascend Demo">
+                                </div>
+                                <div class="question">
+                                    <p>Industry:</p>
+                                    <select class="form-control" id="industry" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                                        <option value="">Select Industry</option>
+                                        <option value="financial-services" selected>Financial Services</option>
+                                        <option value="healthcare">Healthcare</option>
+                                        <option value="manufacturing">Manufacturing</option>
+                                        <option value="retail">Retail</option>
+                                        <option value="technology">Technology</option>
+                                        <option value="professional-services">Professional Services</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="question">
+                                    <p>Organization Size:</p>
+                                    <select class="form-control" id="org-size" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                                        <option value="">Select Size</option>
+                                        <option value="small">Small (1-100 employees)</option>
+                                        <option value="medium" selected>Medium (101-1,000 employees)</option>
+                                        <option value="large">Large (1,001-10,000 employees)</option>
+                                        <option value="enterprise">Enterprise (10,000+ employees)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="navigation-buttons">
+                                <div></div>
+                                <button class="btn next-section" data-target="section-leadership">Continue to Leadership Assessment</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Leadership AI Competency Section -->
+                        <div id="section-leadership" class="assessment-section">
+                            <h2>Leadership AI Competency Assessment</h2>
+                            <p>This section evaluates leadership capabilities across five key dimensions essential for AI transformation.</p>
+                            
+                            <div class="question-group">
+                                <h3>AI Literacy & Knowledge</h3>
+                                
+                                <div class="question">
+                                    <p>How would you rate your understanding of AI concepts and terminology?</p>
+                                    <div class="options">
+                                        <div class="option" data-value="1" onclick="selectOption(this)">Basic awareness of AI concepts</div>
+                                        <div class="option" data-value="2" onclick="selectOption(this)">Working knowledge of AI capabilities</div>
+                                        <div class="option" data-value="3" onclick="selectOption(this)" class="selected">Deep understanding of AI potential</div>
+                                        <div class="option" data-value="4" onclick="selectOption(this)">Comprehensive AI knowledge</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="question">
+                                    <p>Can you distinguish between AI hype and realistic applications in your industry?</p>
+                                    <div class="options">
+                                        <div class="option" data-value="1" onclick="selectOption(this)">Limited ability to distinguish hype from reality</div>
+                                        <div class="option" data-value="2" onclick="selectOption(this)">Can identify obvious cases of AI hype</div>
+                                        <div class="option" data-value="3" onclick="selectOption(this)" class="selected">Good judgment about realistic AI applications</div>
+                                        <div class="option" data-value="4" onclick="selectOption(this)">Expert at evaluating AI claims and potential</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="question-group">
+                                <h3>Strategic Vision & Application</h3>
+                                
+                                <div class="question">
+                                    <p>How do you envision AI's role in your organization's future?</p>
+                                    <div class="options">
+                                        <div class="option" data-value="1" onclick="selectOption(this)">Supporting tool for specific tasks</div>
+                                        <div class="option" data-value="2" onclick="selectOption(this)">Departmental enhancement to improve efficiency</div>
+                                        <div class="option" data-value="3" onclick="selectOption(this)" class="selected">Enterprise-wide transformation driver</div>
+                                        <div class="option" data-value="4" onclick="selectOption(this)">Core to business model and competitive advantage</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="navigation-buttons">
+                                <button class="btn prev-section" data-target="section-intro">Previous</button>
+                                <button class="btn next-section" data-target="section-people">Continue to People Assessment</button>
+                            </div>
+                            
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 20%;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- People Dimension Section -->
+                        <div id="section-people" class="assessment-section">
+                            <h2>People Dimension Assessment</h2>
+                            <p>This section evaluates your organization's human capabilities, culture, and talent strategies related to AI.</p>
+                            
+                            <div class="question-group">
+                                <h3>Workforce AI Literacy</h3>
+                                
+                                <div class="question">
+                                    <p>How would you characterize AI awareness across your organization?</p>
+                                    <div class="options">
+                                        <div class="option" data-value="1" onclick="selectOption(this)">Limited awareness with significant fear or resistance</div>
+                                        <div class="option" data-value="2" onclick="selectOption(this)" class="selected">Pockets of knowledge with growing interest</div>
+                                        <div class="option" data-value="3" onclick="selectOption(this)">Widespread literacy with active engagement</div>
+                                        <div class="option" data-value="4" onclick="selectOption(this)">Comprehensive understanding with innovation culture</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="question">
+                                    <p>What AI training and development opportunities exist for employees?</p>
+                                    <div class="options">
+                                        <div class="option" data-value="1" onclick="selectOption(this)">No formal AI training programs</div>
+                                        <div class="option" data-value="2" onclick="selectOption(this)" class="selected">Limited training available to select groups</div>
+                                        <div class="option" data-value="3" onclick="selectOption(this)">Regular training opportunities for most employees</div>
+                                        <div class="option" data-value="4" onclick="selectOption(this)">Comprehensive learning ecosystem for AI skills</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="navigation-buttons">
+                                <button class="btn prev-section" data-target="section-leadership">Previous</button>
+                                <button class="btn next-section" data-target="section-technology">Continue to Technology Assessment</button>
+                            </div>
+                            
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 40%;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Technology Dimension Section -->
+                        <div id="section-technology" class="assessment-section">
+                            <h2>Technology Dimension Assessment</h2>
+                            <p>This section evaluates your organization's technical infrastructure, tools, and capabilities for AI implementation.</p>
+                            
+                            <div class="question-group">
+                                <h3>Data Infrastructure</h3>
+                                
+                                <div class="question">
+                                    <p>How would you characterize your organization's data infrastructure?</p>
+                                    <div class="options">
+                                        <div class="option" data-value="1" onclick="selectOption(this)">Siloed data with limited accessibility</div>
+                                        <div class="option" data-value="2" onclick="selectOption(this)" class="selected">Data warehousing efforts with improving quality</div>
+                                        <div class="option" data-value="3" onclick="selectOption(this)">Enterprise data platform with strong governance</div>
+                                        <div class="option" data-value="4" onclick="selectOption(this)">Advanced data ecosystem with seamless integration</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="question">
+                                    <p>How would you rate your organization's data quality and accessibility for AI applications?</p>
+                                    <div class="options">
+                                        <div class="option" data-value="1" onclick="selectOption(this)">Poor data quality with significant access barriers</div>
+                                        <div class="option" data-value="2" onclick="selectOption(this)" class="selected">Improving quality with some access procedures</div>
+                                        <div class="option" data-value="3" onclick="selectOption(this)">Reliable quality with established access processes</div>
+                                        <div class="option" data-value="4" onclick="selectOption(this)">Exceptional quality with self-service capabilities</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="navigation-buttons">
+                                <button class="btn prev-section" data-target="section-people">Previous</button>
+                                <button class="btn next-section" data-target="section-process">Continue to Process Assessment</button>
+                            </div>
+                            
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 60%;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Process Dimension Section -->
+                        <div id="section-process" class="assessment-section">
+                            <h2>Process Dimension Assessment</h2>
+                            <p>This section evaluates your organization's processes, governance, and methodologies for AI development and implementation.</p>
+                            
+                            <div class="question-group">
+                                <h3>AI Strategy & Governance</h3>
+                                
+                                <div class="question">
+                                    <p>How would you describe your organization's AI strategy?</p>
+                                    <div class="options">
+                                        <div class="option" data-value="1" onclick="selectOption(this)">Ad hoc initiatives with no formal strategy</div>
+                                        <div class="option" data-value="2" onclick="selectOption(this)" class="selected">Defined strategy with basic alignment to business</div>
+                                        <div class="option" data-value="3" onclick="selectOption(this)">Comprehensive roadmap with strategic alignment</div>
+                                        <div class="option" data-value="4" onclick="selectOption(this)">AI central to business strategy with continuous evolution</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="question">
+                                    <p>How mature is your AI governance framework?</p>
+                                    <div class="options">
+                                        <div class="option" data-value="1" onclick="selectOption(this)">No formal governance structure</div>
+                                        <div class="option" data-value="2" onclick="selectOption(this)" class="selected">Basic governance with emerging standards</div>
+                                        <div class="option" data-value="3" onclick="selectOption(this)">Mature governance with clear oversight</div>
+                                        <div class="option" data-value="4" onclick="selectOption(this)">Exemplary governance setting industry standards</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="navigation-buttons">
+                                <button class="btn prev-section" data-target="section-technology">Previous</button>
+                                <button class="btn next-section" data-target="section-results" onclick="generateResults()">View Results</button>
+                            </div>
+                            
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 80%;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Results Section -->
+                        <div id="section-results" class="assessment-section">
+                            <h2>Assessment Results</h2>
+                            <p>Based on your responses, we've generated a comprehensive assessment of your organization's AI leadership competency and organizational readiness.</p>
+                            
+                            <div class="results-summary">
+                                <div class="results-card">
+                                    <h3>Overall AI Readiness</h3>
+                                    <div class="score">3.2</div>
+                                    <div class="score-label">Developing</div>
+                                    <p>Your organization is making progress in AI readiness but has several opportunities for improvement.</p>
+                                </div>
+                                <div class="results-card">
+                                    <h3>Leadership Competency</h3>
+                                    <div class="score">3.5</div>
+                                    <div class="score-label">Advanced</div>
+                                    <p>Leadership demonstrates strong AI knowledge and strategic vision.</p>
+                                </div>
+                                <div class="results-card">
+                                    <h3>Organizational Maturity</h3>
+                                    <div class="score">2.8</div>
+                                    <div class="score-label">Developing</div>
+                                    <p>Organizational capabilities are growing but require further development.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="radar-chart">
+                                <h3 style="text-align: center; margin-bottom: 20px;">Dimension Breakdown</h3>
+                                <canvas id="radarChart" width="400" height="300"></canvas>
+                            </div>
+                            
+                            <!-- Fallback for chart display issues -->
+                            <div id="chart-fallback" class="chart-fallback">
+                                <h3>Dimension Breakdown</h3>
+                                <p>Your organization shows strengths in Leadership AI Literacy (3.5) and Strategic Vision (3.8), with opportunities for improvement in Data Infrastructure (2.8) and Workforce Skills (2.5).</p>
+                                <p>Compared to industry benchmarks, you are ahead in Strategic Vision but behind in Governance and Workforce Skills.</p>
+                            </div>
+                            
+                            <div class="question-group">
+                                <h3>Key Recommendations</h3>
+                                
+                                <div class="question">
+                                    <h4>Leadership Development</h4>
+                                    <p>Enhance AI fluency through executive education programs and establish a regular AI knowledge sharing forum for senior leaders.</p>
+                                </div>
+                                
+                                <div class="question">
+                                    <h4>People Dimension</h4>
+                                    <p>Develop a comprehensive AI talent strategy and expand training programs to build broader organizational AI literacy.</p>
+                                </div>
+                                
+                                <div class="question">
+                                    <h4>Technology Infrastructure</h4>
+                                    <p>Prioritize data quality improvement initiatives and establish an enterprise-wide data governance framework.</p>
+                                </div>
+                                
+                                <div class="question">
+                                    <h4>Process Enhancement</h4>
+                                    <p>Formalize AI governance structure and develop standardized methodologies for AI project implementation.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="navigation-buttons">
+                                <button class="btn prev-section" data-target="section-process">Previous</button>
+                                <button id="download-report" class="btn" style="background-color: var(--success);">Download Full Report</button>
+                                <button id="view-report" class="btn" style="background-color: var(--primary); margin-left: 10px;">View Report</button>
+                            </div>
+                            
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Download Modal -->
+    <div id="download-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h3>Generating Your Report</h3>
+            <p>Please wait while we prepare your personalized AI Leadership and Organizational Readiness Report.</p>
+            <div class="download-progress">
+                <div class="download-progress-bar">
+                    <div id="download-progress-fill" class="download-progress-fill"></div>
+                </div>
+                <p id="download-status">Preparing report...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PDF Viewer -->
+    <div id="pdf-viewer" class="pdf-viewer">
+        <span class="close-pdf" onclick="closePdfViewer()">&times;</span>
+        <div class="pdf-container">
+            <h2 style="text-align: center; margin-bottom: 20px;">AI Leadership & Organizational Readiness Report</h2>
+            <div id="pdf-display"></div>
+            <div class="pdf-actions">
+                <button id="download-visible-report" class="btn" style="background-color: var(--success);">Download Report</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Download Notification -->
+    <div id="download-notification" class="download-notification">
+        <p>Report downloaded successfully! Check your Downloads folder.</p>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Executive AI Ascend</h3>
+                    <p>Leadership Transformation for the AI Era</p>
+                </div>
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#">Assessment Tools</a></li>
+                        <li><a href="#">Transformation Framework</a></li>
+                        <li><a href="#">Case Studies</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li><a href="mailto:info@executiveaiascend.com">info@executiveaiascend.com</a></li>
+                        <li><a href="tel:+12125551234">+1 (212) 555-1234</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Executive AI Ascend. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Start Assessment button
+        document.getElementById('start-assessment').addEventListener('click', function() {
+            document.getElementById('intro-section').style.display = 'none';
+            document.getElementById('assessment-form').style.display = 'block';
+        });
+        
+        // Navigation between sections
+        document.querySelectorAll('.nav-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Deactivate all nav buttons
+                document.querySelectorAll('.nav-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Activate clicked button
+                this.classList.add('active');
+                
+                // Hide all sections
+                document.querySelectorAll('.assessment-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show targeted section
+                const targetSection = this.getAttribute('data-section');
+                document.getElementById(targetSection).classList.add('active');
+            });
+        });
+        
+        // Next/Previous section navigation
+        document.querySelectorAll('.next-section, .prev-section').forEach(button => {
+            button.addEventListener('click', function() {
+                // Get target section
+                const targetSection = this.getAttribute('data-target');
+                
+                // Deactivate all nav buttons
+                document.querySelectorAll('.nav-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Activate target nav button
+                document.querySelector(`.nav-button[data-section="${targetSection}"]`).classList.add('active');
+                
+                // Hide all sections
+                document.querySelectorAll('.assessment-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show targeted section
+                document.getElementById(targetSection).classList.add('active');
+            });
+        });
+        
+        // Option selection
+        function selectOption(option) {
+            // Remove selected class from siblings
+            const parent = option.parentElement;
+            parent.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            option.classList.add('selected');
+        }
+        
+        // Call selectOption on all elements with the class "selected" to initialize selections
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.option.selected').forEach(option => {
+                selectOption(option);
+            });
+        });
+        
+        // Generate results
+        function generateResults() {
+            try {
+                // Check if Chart is defined
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js is not loaded properly');
+                    document.getElementById('chart-fallback').style.display = 'block';
+                    document.querySelector('.radar-chart').style.display = 'none';
+                    return;
+                }
+                
+                // Get the canvas element
+                const ctx = document.getElementById('radarChart');
+                
+                if (!ctx) {
+                    console.error('Canvas element not found');
+                    document.getElementById('chart-fallback').style.display = 'block';
+                    return;
+                }
+                
+                // Check if a chart instance already exists and destroy it
+                if (window.radarChartInstance) {
+                    window.radarChartInstance.destroy();
+                }
+                
+                // Create new chart
+                window.radarChartInstance = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: [
+                            'AI Literacy',
+                            'Strategic Vision',
+                            'Ethical Leadership',
+                            'Workforce Skills',
+                            'Data Infrastructure',
+                            'AI Technology',
+                            'Governance'
+                        ],
+                        datasets: [{
+                            label: 'Current State',
+                            data: [3.5, 3.8, 3.2, 2.5, 2.8, 3.0, 2.7],
+                            backgroundColor: 'rgba(42, 107, 175, 0.2)',
+                            borderColor: 'rgba(42, 107, 175, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(42, 107, 175, 1)'
+                        }, {
+                            label: 'Industry Benchmark',
+                            data: [3.2, 3.0, 3.5, 3.3, 3.4, 3.6, 3.2],
+                            backgroundColor: 'rgba(226, 176, 74, 0.2)',
+                            borderColor: 'rgba(226, 176, 74, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(226, 176, 74, 1)'
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 5,
+                                min: 0,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error generating chart:', error);
+                document.getElementById('chart-fallback').style.display = 'block';
+                document.querySelector('.radar-chart').style.display = 'none';
+            }
+        }
+        
+        // Modal functions
+        function openModal() {
+            document.getElementById('download-modal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('download-modal').style.display = 'none';
+        }
+        
+        // PDF Viewer functions
+        function openPdfViewer() {
+            document.getElementById('pdf-viewer').style.display = 'block';
+            
+            // Create PDF display
+            const pdfDisplay = document.getElementById('pdf-display');
+            pdfDisplay.innerHTML = `
+                <div style="background-color: white; padding: 40px; border: 1px solid #ddd;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #1a365d; margin-bottom: 10px;">AI Leadership & Organizational Readiness Assessment</h1>
+                        <p style="color: #666; font-size: 16px;">Prepared for: ${document.getElementById('org-name').value || 'Your Organization'}</p>
+                        <p style="color: #666; font-size: 14px;">Date: ${new Date().toLocaleDateString()}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h2 style="color: #1a365d; border-bottom: 2px solid #1a365d; padding-bottom: 8px; margin-bottom: 15px;">Assessment Summary</h2>
+                        <p style="margin-bottom: 10px;"><strong>Overall AI Readiness Score:</strong> 3.2 (Developing)</p>
+                        <p style="margin-bottom: 10px;"><strong>Leadership Competency Score:</strong> 3.5 (Advanced)</p>
+                        <p style="margin-bottom: 10px;"><strong>Organizational Maturity Score:</strong> 2.8 (Developing)</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h2 style="color: #1a365d; border-bottom: 2px solid #1a365d; padding-bottom: 8px; margin-bottom: 15px;">Key Findings</h2>
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="color: #2a6baf; margin-bottom: 10px;">Strengths</h3>
+                            <ul style="padding-left: 20px;">
+                                <li style="margin-bottom: 8px;">Strong leadership vision and AI knowledge</li>
+                                <li style="margin-bottom: 8px;">Clear strategic alignment for AI initiatives</li>
+                                <li style="margin-bottom: 8px;">Established foundation for AI governance</li>
+                            </ul>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="color: #2a6baf; margin-bottom: 10px;">Opportunities</h3>
+                            <ul style="padding-left: 20px;">
+                                <li style="margin-bottom: 8px;">Workforce AI skills development</li>
+                                <li style="margin-bottom: 8px;">Data infrastructure improvement</li>
+                                <li style="margin-bottom: 8px;">Formalization of AI governance structure</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h2 style="color: #1a365d; border-bottom: 2px solid #1a365d; padding-bottom: 8px; margin-bottom: 15px;">Key Recommendations</h2>
+                        <div style="margin-bottom: 15px;">
+                            <h3 style="color: #2a6baf; margin-bottom: 10px;">1. Leadership Development</h3>
+                            <p>Enhance AI fluency through executive education programs and establish a regular AI knowledge sharing forum for senior leaders.</p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <h3 style="color: #2a6baf; margin-bottom: 10px;">2. People Dimension</h3>
+                            <p>Develop a comprehensive AI talent strategy and expand training programs to build broader organizational AI literacy.</p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <h3 style="color: #2a6baf; margin-bottom: 10px;">3. Technology Infrastructure</h3>
+                            <p>Prioritize data quality improvement initiatives and establish an enterprise-wide data governance framework.</p>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <h3 style="color: #2a6baf; margin-bottom: 10px;">4. Process Enhancement</h3>
+                            <p>Formalize AI governance structure and develop standardized methodologies for AI project implementation.</p>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 50px; color: #666; font-size: 12px;">
+                        <p>© 2025 Executive AI Ascend. All rights reserved.</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function closePdfViewer() {
+            document.getElementById('pdf-viewer').style.display = 'none';
+        }
+        
+        // Download Report Button
+        document.getElementById('download-report').addEventListener('click', function() {
+            openModal();
+            simulateReportGeneration();
+        });
+        
+        // View Report Button
+        document.getElementById('view-report').addEventListener('click', function() {
+            openPdfViewer();
+        });
+        
+        // Download from PDF viewer
+        document.getElementById('download-visible-report').addEventListener('click', function() {
+            generatePDF();
+        });
+        
+        // Simulate report generation and download
+        function simulateReportGeneration() {
+            const progressFill = document.getElementById('download-progress-fill');
+            const statusText = document.getElementById('download-status');
+            let progress = 0;
+            
+            // Simulate progress
+            const interval = setInterval(function() {
+                progress += 5;
+                progressFill.style.width = progress + '%';
+                
+                if (progress === 30) {
+                    statusText.textContent = 'Analyzing results...';
+                } else if (progress === 60) {
+                    statusText.textContent = 'Generating recommendations...';
+                } else if (progress === 85) {
+                    statusText.textContent = 'Finalizing report...';
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    statusText.textContent = 'Report ready!';
+                    setTimeout(function() {
+                        generatePDF();
+                        closeModal();
+                        showDownloadNotification();
+                    }, 500);
+                }
+            }, 100);
+        }
+        
+        // Generate PDF function with more error handling for Mac
+        function generatePDF() {
+            try {
+                console.log("Starting PDF generation...");
+                
+                // Check if jsPDF is properly loaded
+                if (typeof window.jspdf === 'undefined') {
+                    console.error("jsPDF not found in window.jspdf");
+                    alert('PDF generation library not available. Please try again later or contact support.');
+                    return;
+                }
+                
+                console.log("jsPDF found, extracting jsPDF constructor");
+                
+                // Use jsPDF to create PDF
+                const { jsPDF } = window.jspdf;
+                if (!jsPDF) {
+                    console.error("jsPDF constructor not found");
+                    alert('PDF generation capability not available. Please try again later.');
+                    return;
+                }
+                
+                console.log("Creating new jsPDF instance");
+                const doc = new jsPDF();
+                
+                // Get organization name
+                const orgName = document.getElementById('org-name').value || 'Your Organization';
+                const currentDate = new Date().toLocaleDateString();
+                
+                console.log("Adding content to PDF");
+                
+                // Add content to PDF
+                doc.setFontSize(22);
+                doc.setTextColor(26, 54, 93);
+                doc.text('Executive AI Ascend', 105, 20, { align: 'center' });
+                
+                doc.setFontSize(16);
+                doc.text('AI Leadership & Organizational Readiness Assessment', 105, 30, { align: 'center' });
+                
+                doc.setFontSize(12);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Prepared for: ${orgName}`, 105, 40, { align: 'center' });
+                doc.text(`Date: ${currentDate}`, 105, 46, { align: 'center' });
+                
+                doc.setDrawColor(26, 54, 93);
+                doc.line(20, 50, 190, 50);
+                
+                // Summary Section
+                doc.setFontSize(14);
+                doc.setTextColor(26, 54, 93);
+                doc.text('Assessment Summary', 20, 60);
+                
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text('Overall AI Readiness Score: 3.2 (Developing)', 20, 70);
+                doc.text('Leadership Competency Score: 3.5 (Advanced)', 20, 77);
+                doc.text('Organizational Maturity Score: 2.8 (Developing)', 20, 84);
+                
+                // Key Findings Section
+                doc.setFontSize(14);
+                doc.setTextColor(26, 54, 93);
+                doc.text('Key Findings', 20, 100);
+                
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text('Strengths:', 20, 110);
+                doc.text('• Strong leadership vision and AI knowledge', 25, 117);
+                doc.text('• Clear strategic alignment for AI initiatives', 25, 124);
+                doc.text('• Established foundation for AI governance', 25, 131);
+                
+                doc.text('Opportunities:', 20, 141);
+                doc.text('• Workforce AI skills development', 25, 148);
+                doc.text('• Data infrastructure improvement', 25, 155);
+                doc.text('• Formalization of AI governance structure', 25, 162);
+                
+                // Recommendations Section
+                doc.setFontSize(14);
+                doc.setTextColor(26, 54, 93);
+                doc.text('Key Recommendations', 20, 180);
+                
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text('1. Leadership Development', 20, 190);
+                doc.setFontSize(10);
+                doc.text('Enhance AI fluency through executive education programs and establish a', 25, 196);
+                doc.text('regular AI knowledge sharing forum for senior leaders.', 25, 201);
+                
+                doc.setFontSize(12);
+                doc.text('2. People Dimension', 20, 211);
+                doc.setFontSize(10);
+                doc.text('Develop a comprehensive AI talent strategy and expand training programs', 25, 217);
+                doc.text('to build broader organizational AI literacy.', 25, 222);
+                
+                // Add new page
+                doc.addPage();
+                
+                doc.setFontSize(14);
+                doc.setTextColor(26, 54, 93);
+                doc.text('Detailed Results by Dimension', 105, 20, { align: 'center' });
+                
+                // Add dimension details
+                const dimensions = [
+                    { name: 'AI Literacy', score: 3.5, benchmark: 3.2 },
+                    { name: 'Strategic Vision', score: 3.8, benchmark: 3.0 },
+                    { name: 'Ethical Leadership', score: 3.2, benchmark: 3.5 },
+                    { name: 'Workforce Skills', score: 2.5, benchmark: 3.3 },
+                    { name: 'Data Infrastructure', score: 2.8, benchmark: 3.4 },
+                    { name: 'AI Technology', score: 3.0, benchmark: 3.6 },
+                    { name: 'Governance', score: 2.7, benchmark: 3.2 }
+                ];
+                
+                let yPosition = 40;
+                
+                dimensions.forEach(dimension => {
+                    doc.setFontSize(12);
+                    doc.setTextColor(26, 54, 93);
+                    doc.text(`${dimension.name}`, 20, yPosition);
+                    
+                    doc.setFontSize(10);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(`Your score: ${dimension.score}`, 150, yPosition);
+                    doc.text(`Industry benchmark: ${dimension.benchmark}`, 150, yPosition + 6);
+                    
+                    // Draw score bar
+                    doc.setDrawColor(220, 220, 220);
+                    doc.setFillColor(220, 220, 220);
+                    doc.rect(20, yPosition + 10, 100, 6, 'F');
+                    
+                    doc.setDrawColor(42, 107, 175);
+                    doc.setFillColor(42, 107, 175);
+                    doc.rect(20, yPosition + 10, 20 * dimension.score, 6, 'F');
+                    
+                    yPosition += 25;
+                });
+                
+                // Footer
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text('© 2025 Executive AI Ascend. All rights reserved.', 105, 280, { align: 'center' });
+                
+                console.log("Saving PDF...");
+                
+                // Generate a clean filename by removing problematic characters
+                const cleanOrgName = orgName.replace(/[^a-zA-Z0-9]/g, '_');
+                const filename = `AI_Leadership_Assessment_${cleanOrgName}.pdf`;
+                
+                // Use a safer approach to download for Mac compatibility
+                try {
+                    // First attempt: Using the save method
+                    doc.save(filename);
+                    console.log("PDF saved successfully using doc.save()");
+                } catch (saveError) {
+                    console.error("Error with doc.save method:", saveError);
+                    
+                    try {
+                        // Second attempt: Using Blob and window.URL
+                        const pdfBlob = doc.output('blob');
+                        const blobUrl = window.URL.createObjectURL(pdfBlob);
+                        
+                        // Create an anchor element and trigger a click
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = blobUrl;
+                        downloadLink.download = filename;
+                        downloadLink.style.display = 'none';
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                        
+                        // Clean up
+                        setTimeout(() => {
+                            window.URL.revokeObjectURL(blobUrl);
+                            document.body.removeChild(downloadLink);
+                        }, 100);
+                        
+                        console.log("PDF saved successfully using Blob approach");
+                    } catch (blobError) {
+                        console.error("Error with Blob approach:", blobError);
+                        alert('Download failed. Please try again or contact support for assistance.');
+                    }
+                }
+                
+                // Show download notification
+                showDownloadNotification();
+                
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('There was an error generating your report. Please try again later or contact support.');
+            }
+        }
+        
+        // Show download notification
+        function showDownloadNotification() {
+            const notification = document.getElementById('download-notification');
+            notification.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(function() {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Check if libraries are loaded correctly
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM loaded, checking for required libraries");
+            
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.js not loaded. Displaying fallback content.');
+                document.getElementById('chart-fallback').style.display = 'block';
+                document.querySelector('.radar-chart').style.display = 'none';
+            } else {
+                console.log("Chart.js loaded successfully");
+            }
+            
+            if (typeof window.jspdf === 'undefined') {
+                console.warn('jsPDF not loaded. Download functionality will be limited.');
+                
+                // Add a more visible warning about PDF functionality
+                const downloadButton = document.getElementById('download-report');
+                const viewButton = document.getElementById('view-report');
+                
+                downloadButton.addEventListener('click', function(e) {
+                    if (typeof window.jspdf === 'undefined') {
+                        e.preventDefault();
+                        alert('PDF generation is currently unavailable. Please try again later or contact support for assistance.');
+                    }
+                });
+                
+                viewButton.addEventListener('click', function(e) {
+                    if (typeof window.jspdf === 'undefined') {
+                        e.preventDefault();
+                        alert('Report viewing is currently unavailable. Please try again later or contact support for assistance.');
+                    }
+                });
+            } else {
+                console.log("jsPDF loaded successfully");
+            }
+            
+            // Pre-select options to improve demo experience
+            document.querySelectorAll('.option').forEach(option => {
+                if (option.classList.contains('selected')) {
+                    selectOption(option);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
